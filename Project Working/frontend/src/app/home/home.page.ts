@@ -1,6 +1,7 @@
-import { Component, EventEmitter, NgZone, ViewChild } from "@angular/core";
+import { Component, NgZone, OnInit, ViewChild } from "@angular/core";
+import { Router } from '@angular/router';
 import * as _ from "lodash";
-import { DatabaseService, ChatMessage, UtilService } from '../providers';
+import { DatabaseService, UtilService, MessageType } from '../providers';
 
 @Component({
   selector: 'page-home',
@@ -8,70 +9,81 @@ import { DatabaseService, ChatMessage, UtilService } from '../providers';
   styleUrls: ['home.page.scss']
 })
 
-export class HomePage {
-  @ViewChild('txtChat') txtChat: any;
-  @ViewChild('content') content: any;
+export class HomePage implements OnInit {
+
   messages: any[];
-  chatBox: string;
-  btnEmitter: EventEmitter<string>;
+
+  public messageType = MessageType;
+  @ViewChild('ionTxtArea') ionTxtArea;
+  public txtArea: any;
+  public lineHeight: number;
+  public placeholder: string;
+  public maxHeight: number;
+  public maxExpand: number;
+
+  chat: string = ''
 
   constructor(public _zone: NgZone,
-    public databaseService: DatabaseService) {
-    this.btnEmitter = new EventEmitter<string>();
+    public databaseService: DatabaseService, private router: Router) {
+    this.lineHeight = 20;
+    this.maxExpand = 5;
+    this.maxHeight = this.lineHeight * this.maxExpand;
+
     this.messages = [
-      { type: 'message_request', from: 'Aliasgher', message: "Hello World1", epoch: "432423424" },
-      { type: 'message_response', from: 'Hamza', message: "Hello World2", epoch: 4324234234 },
-      { type: 'message_request', from: 'Aliasgher', message: "Hello World3", epoch: 4324234234 },
-      { type: 'message_response', from: 'Hamza', message: "Hello World4", epoch: 4324234234 },
+      { type: 'message_response', message: "I am Helexa!!", epoch: Date.now(), data_type: "string" },
+      { type: 'message_response', message: "Welcome to Hamdard Chatbot", epoch: Date.now(), data_type: "string" },
+      { type: 'message_response', message: this.databaseService.name + " you can ask me anything", epoch: Date.now(), data_type: "string" },
+      { type: 'message_response', message: "I am here for your help", epoch: Date.now(), data_type: "string" }
     ];
-    this.chatBox = "";
-    this.init();
   }
 
-  ionViewWillEnter() {
-    this.databaseService.getJson("messages")
-      .then(messages => {
-        if (messages) {
-          this.messages = this.messages.concat(_.sortBy(messages, ['epoch']));
-        }
-        this.scrollToBottom();
-      });
+
+  formatEpoch(epoch): string {
+    return UtilService.getCalendarDay(epoch);
   }
 
-  ionViewWillLeave() {
-
-  }
-
-  init() {
-    // this.socketService.messages.subscribe((chatMessage: ChatMessage) => {
-    //   this._zone.run(() => {
-    //     this.messages.push(chatMessage);
-    //   });
-    //   this.scrollToBottom();
-    // });
-  }
 
   public sendMessage() {
-    this.btnEmitter.emit("sent clicked");
-    this.txtChat.setFocus();
-    let message = this.txtChat.content;
-    this.send(message);
-    this.txtChat.clearInput();
+    let message = {
+      type: 'message_request',
+      message: this.chat,
+      epoch: Date.now()
+    }
+    this.messages.push(message)
+    let data = {
+      query: this.chat
+    }
+    this.databaseService.predict(data).subscribe(res => {
+      let message = {
+        type: 'message_response',
+        message: res,
+        epoch: Date.now(),
+        data_type: typeof (res)
+      }
+      console.log(typeof (res));
+      this.messages.push(message)
+      this.chat = ''
+    })
   }
 
-  send(message) {
-    //todo read email from database
-    let from = "annaggarwal@paypal.com";
-    // this.socketService.newRequest(UtilService.formatMessageRequest(message, from));
-    this.chatBox = '';
-    this.scrollToBottom();
+
+  ngAfterViewInit() {
+    this.txtArea = this.ionTxtArea.el;
+    this.txtArea.style.height = this.lineHeight + "px";
+    this.maxHeight = this.lineHeight * this.maxExpand;
+    this.txtArea.style.resize = 'none';
   }
 
-  scrollToBottom() {
-    this._zone.run(() => {
-      setTimeout(() => {
-        this.content.scrollToBottom(300);
-      });
-    });
+  logout() {
+    this.messages = [{ type: 'message_response', message: "I am Helexa!!", epoch: Date.now(), data_type: "string" },
+    { type: 'message_response', message: "Welcome to Hamdard Chatbot", epoch: Date.now(), data_type: "string" },
+    { type: 'message_response', message: this.databaseService.name  + " you can ask me anything", epoch: Date.now(), data_type: "string" },
+    { type: 'message_response', message: "I am here for your help", epoch: Date.now(), data_type: "string" }]
+    this.router.navigateByUrl('login');
+    window.location.replace('http://localhost:8100/login')
   }
+
+  ngOnInit() {
+  }
+
 }

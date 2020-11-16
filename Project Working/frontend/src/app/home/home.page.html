@@ -1,31 +1,46 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Hamdard Chatbot
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-toolbar color="success">
+  <ion-title>Hamdard Chatbot</ion-title>
+  <ion-buttons slot="end">
+    <ion-button icon-only (click)="logout()">
+      <ion-icon slot="end" name="log-out"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>
 
-<ion-content #content>
+<ion-content>
   <ion-list no-lines>
-    <ion-item *ngFor="let msg of messages">
-      <chat-bubble [chatMessage]="msg"></chat-bubble>
+    <ion-item *ngFor="let chatMessage of messages">
+      <div>
+        <div class="chat-bubble {{chatMessage.type === messageType.MSG_REQ ? 'right' : 'left'}}">
+          <div *ngIf="chatMessage.data_type != 'object';else dictionary" class="message">{{chatMessage.message}}</div>
+          <ng-template #dictionary class="message">
+            {{chatMessage.message | json}}
+          </ng-template>
+          <div class="message-detail" style="float:right">
+            <span>{{formatEpoch(chatMessage.epoch)}}</span>
+          </div>
+        </div>
+      </div>
     </ion-item>
   </ion-list>
 </ion-content>
 
 <ion-footer no-border class="chatPageFooter">
   <ion-toolbar>
-    <ion-item no-lines>
-      <ion-label style="margin:0px;"></ion-label>
-      <div item-content style="width:100%;">
-        <elastic-textarea #txtChat placeholder="Send a message" lineHeight="20" maxExpand="5"></elastic-textarea>
-      </div>
-    </ion-item>
-    <ion-buttons right style="margin-left:10px">
-      <button ion-button icon-only style="margin-top: -15px;" (click)="sendMessage()">
-        <ion-icon name="md-send"></ion-icon>
-      </button>
+    <ion-title class="chat">
+      <ion-item no-lines>
+        <ion-label style="margin:0px;"></ion-label>
+        <div item-content class="full">
+          <ion-textarea (keyup.enter)="sendMessage()" [(ngModel)]="chat" lineHeight="40px" maxExpand="5" #ionTxtArea
+            placeholder='Send a message'>
+          </ion-textarea>
+        </div>
+      </ion-item>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button icon-only color="success" class="send" (click)="sendMessage()">
+        <ion-icon slot="end" name="send"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>

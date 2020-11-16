@@ -1,64 +1,29 @@
-import { Injectable } from "@angular/core";
-import { Sql } from "./sql";
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { timeout } from 'rxjs/operators';
 
 @Injectable()
 export class DatabaseService {
 
-  constructor(public _db: Sql) {
-  }
+  id = null
+  name = null
 
-  //
-  // Shared getter setter
-  //
-  set(key: string, value: string): Promise<boolean> {
-    return this._db.set(key, value)
-      .then(() => true)
-      .catch(err => {
-        console.error('[Error] Saving ' + key + ' - ' + JSON.stringify(err));
-        return false;
-      });
-  }
+  constructor(private httpClient: HttpClient) {}
 
-  get(key: string): Promise<string> {
-    return this._db.get(key)
-      .then(value => {
-        if (value) {
-          return value;
-        } else {
-          throw new Error('Undefined value');
-        }
-      })
-      .catch(err => {
-        console.error('[Error] Getting ' + key + ' - ' + JSON.stringify(err));
-        return null;
-      });
-  }
+  httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
 
-  remove(key: string): Promise<boolean> {
-    return this._db.remove(key)
-      .then(() => true)
-      .catch(err => {
-        console.error('[Error] Removing ' + key + ' - ' + JSON.stringify(err));
-        return false;
-      });
-  }
 
-  getJson(key: string): Promise<any> {
-    return this.get(key).then(value => {
-      try {
-        return JSON.parse(value);
-      } catch (err) {
-        console.error('Storage getJson(): unable to parse value for key', key, ' as JSON');
-        return null;
-      }
-    });
-  }
-
-  setJson(key: string, value: any): Promise<boolean> {
-    try {
-      return this.set(key, JSON.stringify(value));
-    } catch (err) {
-      return Promise.resolve(false);
-    }
+  predict(data) {
+    data['username'] = this.id
+    return this.httpClient.post<Response>('http://localhost:5000/reply', data, this.httpOptions).pipe(
+      timeout(10000),
+      (res) => {
+        return res;
+      },
+    );
   }
 }

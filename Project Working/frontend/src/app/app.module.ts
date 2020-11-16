@@ -12,6 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 
 
 import { Sql, DatabaseService, UtilService } from './providers';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -19,7 +20,7 @@ import { Sql, DatabaseService, UtilService } from './providers';
     AppComponent,
   ],
   entryComponents: [],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule],
+  imports: [BrowserModule, HttpClientModule, IonicModule.forRoot(), AppRoutingModule],
   providers: [
     StatusBar,
     Sql,

@@ -2,5 +2,8 @@
     "timing": 0.8,
     "kya": 0.6323762028455224,
     "today": 1.0,
-    "timings":0.8
+    "timings": 0.8,
+    "schedule": 0.7,
+    "class": 0.8,
+    "classes": 0.8
 }
