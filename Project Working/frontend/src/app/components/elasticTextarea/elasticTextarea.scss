@@ -1,0 +1,12 @@
+elastic-textarea {
+  .text-input {
+    margin: 6px 10px !important;
+    padding: 0;
+    width: calc(100% - 20px) !important;
+  }
+  ion-textarea {
+    border: 1px solid #999999;
+    border-radius: 18px;
+    background-color: #f6f8fa;
+  }
+}
